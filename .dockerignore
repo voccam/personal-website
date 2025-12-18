@@ -1,0 +1,6 @@
+.next
+node_modules
+dev.db-journal
+npm-debug.log
+Dockerfile
+.env
