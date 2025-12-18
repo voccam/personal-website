@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Personal website — Mathis Vandesmal
 
-## Getting Started
+CV interactif et portfolio présentant les projets ECAM (Sticker Tracker, StrideSense, bot 2048…). L'application combine Next.js (App Router), Prisma/SQLite, authentification sécurisée et déploiement par Docker.
 
-First, run the development server:
+### Stack
+
+- Next.js 16 avec React Server Components et Tailwind CSS v4.
+- Prisma + SQLite (`dev.db`) pour les utilisateurs, sessions et articles de blog.
+- Authentification maison : formulaire credentials → session token stocké en base + cookie httpOnly.
+- Dockerfile multi-stage prêt à être poussé sur n'importe quel registre.
+
+### Lancer en local
 
 ```bash
+npm install
+npx prisma db push      # Crée/actualise le schéma SQLite
+npx tsx prisma/seed.ts  # Génère l'utilisateur admin + contenu de démo
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Le site s'ouvre sur [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Identifiants de démonstration : `admin@local.test` / `ChangeMe123!` (modifiables dans `prisma/seed.ts`).
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Authentification & blog
 
-## Learn More
+- Le formulaire `/login` vérifie les identifiants avec bcrypt.
+- Un token de session est enregistré dans la table `Session` et placé en cookie httpOnly.
+- Le tableau de bord `/dashboard` (protégé) permet de créer des articles (stockés en base et visibles sur `/blog`).
 
-To learn more about Next.js, take a look at the following resources:
+### Docker
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+docker build -t mathis-portfolio .
+docker run -p 3000:3000 mathis-portfolio
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Le conteneur embarque la base `dev.db`. Pour préserver des données persistantes, montez un volume ou migrez vers un SGBD distant et mettez à jour `DATABASE_URL`.
